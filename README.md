@@ -49,7 +49,7 @@ expected. The test is located in the `tests/e2e` folder. Usually I would run thi
 start the test, just run the following command:
 
 ```bash
-make test-e2e
+make test_e2e
 ```
 
 ## Linting
@@ -80,8 +80,7 @@ type Parser interface {
 }
 ```
 
-During the implementation, I thought about some improvements that could be made to the **public interface** of the *
-*parser**.
+During the implementation, I thought about some improvements that could be made to the **public interface** of the **parser**.
 
 - `context` is not being used in the parser methods. I would definitely add it in a real-world scenario to allow the
   caller to cancel the operation and pass trace information.

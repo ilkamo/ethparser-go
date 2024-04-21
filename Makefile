@@ -29,7 +29,7 @@ fmt:
 test:
 	go test --race -v ./...
 
-test-e2e:
+test_e2e:
 	go test --race -tags=e2e -v ./...
 
 .PHONY: display_coverage
