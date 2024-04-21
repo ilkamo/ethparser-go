@@ -13,21 +13,24 @@ import (
 )
 
 const (
-	defaultBlockProcessTimeout = 5 * time.Second
-	defaultNoNewBlocksPause    = 10 * time.Second // eth new block appears every ~12 seconds
+	defaultBlocksProcessTimeout       = 5 * time.Second
+	defaultNoNewBlocksPause           = 10 * time.Second // eth new block appears every ~12 seconds
+	defaultMaxNumberOfBlocksToProcess = 10
 )
 
 type Parser struct {
-	blockProcessTimeout time.Duration
-	ethClient           EthereumClient
-	lastProcessedBlock  uint64
-	logger              types.Logger
-	noNewBlocksPause    time.Duration
-	transactionsRepo    TransactionsRepository
-	addressesRepository AddressesRepository
-	running             bool
-	singleWorkerChannel chan struct{}
+	blocksProcessTimeout time.Duration
+	ethClient            EthereumClient
+	lastProcessedBlock   uint64
+	logger               types.Logger
+	noNewBlocksPause     time.Duration
+	transactionsRepo     TransactionsRepository
+	addressesRepository  AddressesRepository
+	running              bool
+	batchesWorker        chan struct{}
 	sync.RWMutex
+	maxNumberOfBlocksToProcess int
+	processingErrs             []error
 }
 
 func NewParser(
@@ -36,12 +39,14 @@ func NewParser(
 	opts ...Option,
 ) (*Parser, error) {
 	p := &Parser{
-		blockProcessTimeout: defaultBlockProcessTimeout,
-		logger:              logger,
-		noNewBlocksPause:    defaultNoNewBlocksPause,
-		transactionsRepo:    storage.NewTransactionRepository(),
-		addressesRepository: storage.NewAddressesRepository(),
-		singleWorkerChannel: make(chan struct{}, 1),
+		blocksProcessTimeout:       defaultBlocksProcessTimeout,
+		logger:                     logger,
+		noNewBlocksPause:           defaultNoNewBlocksPause,
+		transactionsRepo:           storage.NewTransactionRepository(),
+		addressesRepository:        storage.NewAddressesRepository(),
+		batchesWorker:              make(chan struct{}, 1),
+		maxNumberOfBlocksToProcess: defaultMaxNumberOfBlocksToProcess,
+		processingErrs:             make([]error, 0),
 	}
 
 	for _, opt := range opts {
@@ -57,7 +62,7 @@ func NewParser(
 		p.ethClient = ethClient
 	}
 
-	p.singleWorkerChannel <- struct{}{}
+	p.batchesWorker <- struct{}{}
 
 	return p, nil
 }
@@ -105,6 +110,30 @@ func (p *Parser) GetTransactions(address string) []types.Transaction {
 	return transactions
 }
 
+// getNumberOfBlocksToProcess calculates the number of blocks that the parser should process in the next iteration.
+func (p *Parser) getNumberOfBlocksToProcess(ctx context.Context) (int, uint64, error) {
+	p.RLock()
+	defer p.RUnlock()
+
+	lastBlockNumber, err := p.ethClient.GetMostRecentBlockNumber(ctx)
+	if err != nil {
+		return 0, 0, fmt.Errorf("could not get most recent block: %w", err)
+	}
+
+	blocksToProcessCount := int(lastBlockNumber - uint64(p.GetCurrentBlock()))
+
+	if blocksToProcessCount > p.maxNumberOfBlocksToProcess {
+		blocksToProcessCount = p.maxNumberOfBlocksToProcess
+	}
+
+	lastBlockOfTheSequence := p.GetCurrentBlock() + blocksToProcessCount
+
+	p.logger.Info("calculated blocks to process",
+		"blocks", blocksToProcessCount, "lastBlockOfTheSequence", lastBlockOfTheSequence)
+
+	return blocksToProcessCount, uint64(lastBlockOfTheSequence), nil
+}
+
 // Run starts the parser and listens for new blocks.
 // This method is not specified in the task `Parser` interface, but I added it to start the
 // parser explicitly (not in the constructor).
@@ -134,24 +163,12 @@ func (p *Parser) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			p.logger.Info("stopping parser")
 			return nil
-		case <-p.singleWorkerChannel:
-			ctx, cancel := context.WithTimeout(ctx, defaultBlockProcessTimeout)
-
-			p.logger.Info("fetching and parsing block")
-
-			if err := p.fetchAndParseBlock(ctx); err != nil {
-				if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
-					p.logger.Error("could not fetch and parse because the context expired")
-				} else {
-					p.logger.Error("could not fetch and parse block", "error", err)
-				}
-			}
-			if err == nil {
-				p.logger.Info("block fetched and parsed", "block", p.lastProcessedBlock)
+		case <-p.batchesWorker:
+			if err := p.processBlocks(ctx); err != nil {
+				p.logger.Error("could not process blocks", "error", err)
 			}
 
-			p.singleWorkerChannel <- struct{}{}
-			cancel()
+			p.batchesWorker <- struct{}{}
 		}
 	}
 }
@@ -168,46 +185,6 @@ func (p *Parser) setIsRunning(running bool) {
 	defer p.Unlock()
 
 	p.running = running
-}
-
-func (p *Parser) fetchAndParseBlock(ctx context.Context) error {
-	lastBlockNumber, err := p.ethClient.GetMostRecentBlockNumber(ctx)
-	if err != nil {
-		return fmt.Errorf("could not get most recent block: %w", err)
-	}
-
-	// Check if there are new blocks to process. If not, sleep for a while to avoid spamming the node.
-	if !p.shouldProcessBlock(lastBlockNumber) {
-		p.logger.Info("no new blocks, sleeping to avoid spamming the node")
-		time.Sleep(p.noNewBlocksPause)
-		return nil
-	}
-
-	// Get the next block to process in the sequence.
-	block, err := p.ethClient.GetBlockByNumber(ctx, p.lastProcessedBlock+1)
-	if err != nil {
-		return fmt.Errorf("could not get block by number: %w", err)
-	}
-
-	// Process the block.
-	if err = p.processBlock(ctx, block); err != nil {
-		return fmt.Errorf("could not process block: %w", err)
-	}
-
-	// Save the last processed block.
-	if err = p.transactionsRepo.SaveLastProcessedBlock(ctx, block.Number); err != nil {
-		return fmt.Errorf("could not save last processed block: %w", err)
-	}
-
-	// Move to sequence to the next block.
-	p.setLastProcessedBlock(block.Number)
-
-	return nil
-}
-
-// shouldProcessBlock checks if there are new blocks to process.
-func (p *Parser) shouldProcessBlock(lastBlockNumber uint64) bool {
-	return p.lastProcessedBlock < lastBlockNumber
 }
 
 // setLastProcessedBlock sets the last processed block number.

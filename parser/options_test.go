@@ -13,7 +13,7 @@ func TestWithBlockProcessTimeout(t *testing.T) {
 	t.Run("set block process timeout opt", func(t *testing.T) {
 		p, err := NewParser(endpoint, nil, WithBlockProcessTimeout(2000))
 		require.NoError(t, err)
-		require.Equal(t, time.Duration(2000), p.blockProcessTimeout)
+		require.Equal(t, time.Duration(2000), p.blocksProcessTimeout)
 	})
 }
 
@@ -66,5 +66,13 @@ func TestWithNoNewBlocksPause(t *testing.T) {
 		p, err := NewParser(endpoint, nil, WithNoNewBlocksPause(2000))
 		require.NoError(t, err)
 		require.Equal(t, time.Duration(2000), p.noNewBlocksPause)
+	})
+}
+
+func TestWithMaxNumberOfBlocksToProcess(t *testing.T) {
+	t.Run("set max blocks to process opt", func(t *testing.T) {
+		p, err := NewParser(endpoint, nil, WithMaxBlocksToProcess(22))
+		require.NoError(t, err)
+		require.Equal(t, 22, p.maxNumberOfBlocksToProcess)
 	})
 }

@@ -10,7 +10,7 @@ type Option func(p *Parser)
 
 func WithBlockProcessTimeout(timeout time.Duration) Option {
 	return func(p *Parser) {
-		p.blockProcessTimeout = timeout
+		p.blocksProcessTimeout = timeout
 	}
 }
 
@@ -41,5 +41,11 @@ func WithAddressesRepo(repo AddressesRepository) Option {
 func WithNoNewBlocksPause(duration time.Duration) Option {
 	return func(p *Parser) {
 		p.noNewBlocksPause = duration
+	}
+}
+
+func WithMaxBlocksToProcess(maxBlocks int) Option {
+	return func(p *Parser) {
+		p.maxNumberOfBlocksToProcess = maxBlocks
 	}
 }

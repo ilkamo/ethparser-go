@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"math/big"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -109,7 +108,7 @@ func TestParser(t *testing.T) {
 		require.Equal(t, "could not get transactions", log.GotErrors()[0])
 	})
 
-	t.Run("parser should error because of context timeout", func(t *testing.T) {
+	t.Run("parser could not start - should error because of context timeout", func(t *testing.T) {
 		log := &mock.Logger{}
 
 		p, err := NewParser(
@@ -126,43 +125,7 @@ func TestParser(t *testing.T) {
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 
-	t.Run("parser should log timeout", func(t *testing.T) {
-		log := &mock.Logger{}
-		ethMock := mock.EthereumClient{
-			MostRecentBlock: 2,
-			BlockByNumber:   types.Block{},
-			WithError:       context.DeadlineExceeded,
-		}
-
-		p, err := NewParser(
-			endpoint,
-			log,
-			WithNoNewBlocksPause(noNewBlockPauseDuration),
-			WithEthereumClient(ethMock),
-		)
-		require.NoError(t, err)
-		require.NotNil(t, p)
-
-		ctx, cancel := context.WithCancel(context.TODO())
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
-		go func() {
-			err := p.Run(ctx)
-			require.NoError(t, err)
-			wg.Done()
-		}()
-
-		require.Eventually(t, func() bool {
-			return p.isRunning() && len(log.GotErrors()) > 0 &&
-				strings.Contains(log.GotErrors()[0], "could not fetch and parse because the context expired")
-		}, time.Second*2, time.Millisecond*100)
-
-		cancel()
-		wg.Wait()
-	})
-
-	t.Run("parser should log error during fetchAndParseBlock", func(t *testing.T) {
+	t.Run("parser should log error during processing", func(t *testing.T) {
 		log := &mock.Logger{}
 		ethMock := mock.EthereumClient{
 			MostRecentBlock: 2,
@@ -190,9 +153,9 @@ func TestParser(t *testing.T) {
 		}()
 
 		require.Eventually(t, func() bool {
-			return p.isRunning() && len(log.GotErrors()) > 0 &&
-				strings.Contains(log.GotErrors()[0], "could not fetch and parse block")
+			return p.isRunning() && len(log.GotErrors()) > 10
 		}, time.Second*2, time.Millisecond*100)
+		require.Contains(t, log.GotErrors(), "could not process blocks")
 
 		cancel()
 		wg.Wait()
