@@ -1,3 +1,5 @@
+# Ethereum Parser
+
 I had a lot of fun working on this project. My approach was to create a parser that could be easily extended with new
 repositories and ethereum clients. All the code is tested with unit tests and I tried to keep it as clean as possible.
 The most interesting parts are commented in the code so that reviewers can understand my thought process.
