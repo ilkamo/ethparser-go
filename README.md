@@ -28,14 +28,7 @@ I created different packages to have a separation of concerns. Here is a brief e
 
 ---
 
-In addition, I created a simple e2e test that runs the parser with a real ethereum client to show that it works as
-expected. The test is located in the `tests/e2e` folder and can be run with the following command. Usually I would run
-this with a docker-compose file that would start an ethereum emulator, but wanted to keep it simple for this project. To
-start the test, just run the following command:
-
-```bash
-make test-e2e
-```
+## Testing
 
 All the unit tests can be run with the following command:
 
@@ -43,17 +36,37 @@ All the unit tests can be run with the following command:
 make test
 ```
 
-The linting can be run with the following command:
+To display the tests coverage in an interactive html page, run the following command:
+
+```bash
+make display_coverage
+```
+
+In addition, I created a simple e2e test suite that runs the parser with a real ethereum client to show that it works as
+expected. The test is located in the `tests/e2e` folder. Usually I would run this with a docker-compose file that would start an ethereum emulator, but wanted to keep it simple for this project. To
+start the test, just run the following command:
+
+```bash
+make test-e2e
+```
+
+## Linting
+
+To lint the code, run the following command:
 
 ```bash
 make lint
 ```
 
-To display the tests coverage in an interactive html page, run the following command:
+To fix linting issues, run the following command:
 
 ```bash
-make coverage
+make fmt
 ```
+
+## CI
+
+I added a simple GitHub Actions workflow that runs the tests and linter on every pull request.
 
 ## Considerations
 
