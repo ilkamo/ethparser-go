@@ -20,7 +20,7 @@ golangci_lint:
 lint:
 	$(info Running Go code checkers and linters)
 	golangci-lint --version
-	golangci-lint $(V) run -v -E goimports --timeout=5m
+	golangci-lint run -E gofumpt --timeout 5m --verbose ./...
 
 .PHONY: fmt
 fmt:

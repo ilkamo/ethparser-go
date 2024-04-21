@@ -102,7 +102,8 @@ func (p *Parser) GetTransactions(address string) []types.Transaction {
 // parser explicitly (not in the constructor).
 // I also added a context to handle timeouts and cancellations.
 // When called, it starts processing blocks in a loop until the context is canceled.
-// The starting block is the last processed block from the repository so that the parser can continue from where it left off.
+// The starting block is the last processed block from the repository so that the parser
+// can continue from where it left off after a restart.
 func (p *Parser) Run(ctx context.Context) error {
 	if p.isRunning() {
 		return errors.New("parser is already running")
