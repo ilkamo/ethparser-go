@@ -1,7 +1,7 @@
 # Ethereum Parser
 
 I had a lot of fun working on this project. My approach was to create a parser that could be easily extended with new
-repositories and ethereum clients. All the code is tested with unit tests and I tried to keep it as clean as possible.
+repositories and ethereum clients. Most of the code is tested with unit tests and I tried to keep it as clean as possible.
 The most interesting parts are commented in the code so that reviewers can understand my thought process.
 
 ## Packages
@@ -87,5 +87,5 @@ During the implementation, I thought about some improvements that could be made 
 - The `Subscribe` and `GetTransactions` methods could be improved to return an error. This way, the caller could know if
   the subscription failed and why (really useful it there is a cache or a network error).
 - The parser doesn't have a method to start parsing. I assumed that it would start parsing when the parser is created. I
-  really don't like this approach this is why I added a Run method to the parser. This way, the caller can start parser
+  really don't like this approach this is why I added a Run method to the parser. This way, the caller can start the parser
   and control it with a context.

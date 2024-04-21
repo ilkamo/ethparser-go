@@ -103,8 +103,8 @@ func TestParser(t *testing.T) {
 		require.NotNil(t, p)
 
 		require.Empty(t, p.GetTransactions(address0))
-		require.NotEmpty(t, log.Errors)
-		require.Equal(t, "could not get transactions", log.Errors[0])
+		require.NotEmpty(t, log.GotErrors())
+		require.Equal(t, "could not get transactions", log.GotErrors()[0])
 	})
 
 	t.Run("parser should error because of context timeout", func(t *testing.T) {
@@ -207,7 +207,7 @@ func TestParser(t *testing.T) {
 		require.NotNil(t, p)
 
 		require.Empty(t, p.Subscribe(address0))
-		require.NotEmpty(t, log.Errors)
+		require.NotEmpty(t, log.GotErrors())
 		require.Equal(t, "could not observe address", log.GotErrors()[0])
 	})
 
