@@ -49,7 +49,7 @@ expected. The test is located in the `tests/e2e` folder. Usually I would run thi
 start the test, just run the following command:
 
 ```bash
-make test-e2e
+make test_e2e
 ```
 
 ## Linting
