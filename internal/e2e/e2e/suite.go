@@ -15,7 +15,7 @@ type ParserTestSuite struct {
 	suite.Suite
 	parser                 *parser.Parser
 	transactionsRepository parser.TransactionsRepository
-	observerRepository     parser.ObserverRepository
+	addressesRepository    parser.AddressesRepository
 }
 
 func (s *ParserTestSuite) SetupSuite() {
@@ -23,14 +23,14 @@ func (s *ParserTestSuite) SetupSuite() {
 	lastParsedBlock := uint64(19698124)
 
 	s.transactionsRepository = storage.NewTransactionRepositoryWithLatestBlock(lastParsedBlock)
-	s.observerRepository = storage.NewObserverRepository()
+	s.addressesRepository = storage.NewAddressesRepository()
 
 	p, err := parser.NewParser(
 		"https://cloudflare-eth.com",
 		slog.New(slog.NewJSONHandler(os.Stdout, nil)),
 		parser.WithNoNewBlocksPause(noNewBlockPause),
 		parser.WithTransactionsRepo(s.transactionsRepository),
-		parser.WithObserverRepo(s.observerRepository),
+		parser.WithAddressesRepo(s.addressesRepository),
 	)
 	s.Require().NoError(err)
 	s.Require().NotNil(p)

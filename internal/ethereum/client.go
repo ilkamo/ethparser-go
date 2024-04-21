@@ -38,8 +38,8 @@ func NewClient(endpoint string, opts ...Option) (Client, error) {
 	return *c, nil
 }
 
-// GetMostRecentBlock returns the number of the most recent block.
-func (c Client) GetMostRecentBlock(ctx context.Context) (uint64, error) {
+// GetMostRecentBlockNumber returns the number of the most recent block.
+func (c Client) GetMostRecentBlockNumber(ctx context.Context) (uint64, error) {
 	resp, err := c.rpcClient.Call(ctx, "eth_blockNumber", nil)
 	if err != nil {
 		return 0, fmt.Errorf("could not call rpc method: %w", err)

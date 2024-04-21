@@ -24,9 +24,9 @@ type Parser struct {
 	logger              types.Logger
 	noNewBlocksPause    time.Duration
 	transactionsRepo    TransactionsRepository
-	observerRepo        ObserverRepository
+	addressesRepository AddressesRepository
 	running             bool
-	workerChannel       chan struct{}
+	singleWorkerChannel chan struct{}
 	sync.RWMutex
 }
 
@@ -40,8 +40,8 @@ func NewParser(
 		logger:              logger,
 		noNewBlocksPause:    defaultNoNewBlocksPause,
 		transactionsRepo:    storage.NewTransactionRepository(),
-		observerRepo:        storage.NewObserverRepository(),
-		workerChannel:       make(chan struct{}, 1),
+		addressesRepository: storage.NewAddressesRepository(),
+		singleWorkerChannel: make(chan struct{}, 1),
 	}
 
 	for _, opt := range opts {
@@ -57,7 +57,7 @@ func NewParser(
 		p.ethClient = ethClient
 	}
 
-	p.workerChannel <- struct{}{}
+	p.singleWorkerChannel <- struct{}{}
 
 	return p, nil
 }
@@ -76,7 +76,7 @@ func (p *Parser) GetCurrentBlock() int {
 // added, false if it not. I would add an error to the return value to provide more information about the failure.
 // Additionally, I would add a context to the method signature.
 func (p *Parser) Subscribe(address string) bool {
-	err := p.observerRepo.ObserveAddress(context.Background(), address)
+	err := p.addressesRepository.ObserveAddress(context.Background(), address)
 	if err != nil {
 		p.logger.Error("could not observe address", err)
 		return false
@@ -134,7 +134,7 @@ func (p *Parser) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			p.logger.Info("stopping parser")
 			return nil
-		case <-p.workerChannel:
+		case <-p.singleWorkerChannel:
 			ctx, cancel := context.WithTimeout(ctx, defaultBlockProcessTimeout)
 
 			p.logger.Info("fetching and parsing block")
@@ -150,7 +150,7 @@ func (p *Parser) Run(ctx context.Context) error {
 				p.logger.Info("block fetched and parsed", "block", p.lastProcessedBlock)
 			}
 
-			p.workerChannel <- struct{}{}
+			p.singleWorkerChannel <- struct{}{}
 			cancel()
 		}
 	}
@@ -171,13 +171,13 @@ func (p *Parser) setIsRunning(running bool) {
 }
 
 func (p *Parser) fetchAndParseBlock(ctx context.Context) error {
-	blockNumber, err := p.ethClient.GetMostRecentBlock(ctx)
+	lastBlockNumber, err := p.ethClient.GetMostRecentBlockNumber(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get most recent block: %w", err)
 	}
 
 	// Check if there are new blocks to process. If not, sleep for a while to avoid spamming the node.
-	if !p.shouldProcessBlock(blockNumber) {
+	if !p.shouldProcessBlock(lastBlockNumber) {
 		p.logger.Info("no new blocks, sleeping to avoid spamming the node")
 		time.Sleep(p.noNewBlocksPause)
 		return nil
@@ -206,8 +206,8 @@ func (p *Parser) fetchAndParseBlock(ctx context.Context) error {
 }
 
 // shouldProcessBlock checks if there are new blocks to process.
-func (p *Parser) shouldProcessBlock(blockNumber uint64) bool {
-	return p.lastProcessedBlock < blockNumber
+func (p *Parser) shouldProcessBlock(lastBlockNumber uint64) bool {
+	return p.lastProcessedBlock < lastBlockNumber
 }
 
 // setLastProcessedBlock sets the last processed block number.

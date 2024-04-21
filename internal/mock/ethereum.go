@@ -12,7 +12,7 @@ type EthereumClient struct {
 	WithError       error
 }
 
-func (e EthereumClient) GetMostRecentBlock(_ context.Context) (uint64, error) {
+func (e EthereumClient) GetMostRecentBlockNumber(_ context.Context) (uint64, error) {
 	if e.WithError != nil {
 		return 0, e.WithError
 	}

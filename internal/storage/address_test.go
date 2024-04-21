@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestObserverRepository(t *testing.T) {
+func TestAddressesRepository(t *testing.T) {
 	addresses := randomAddresses()
 	ctx := context.TODO()
 
 	t.Run("repo should be empty", func(t *testing.T) {
-		repo := NewObserverRepository()
+		repo := NewAddressesRepository()
 
 		isObserved, err := repo.IsAddressObserved(ctx, addresses[0])
 		require.NoError(t, err)
@@ -21,7 +21,7 @@ func TestObserverRepository(t *testing.T) {
 	})
 
 	t.Run("observe address", func(t *testing.T) {
-		repo := NewObserverRepository()
+		repo := NewAddressesRepository()
 
 		err := repo.ObserveAddress(ctx, addresses[0])
 		require.NoError(t, err)
@@ -36,7 +36,7 @@ func TestObserverRepository(t *testing.T) {
 	})
 
 	t.Run("observe more than one address", func(t *testing.T) {
-		repo := NewObserverRepository()
+		repo := NewAddressesRepository()
 
 		err := repo.ObserveAddress(ctx, addresses[0])
 		require.NoError(t, err)
@@ -58,7 +58,7 @@ func TestObserverRepository(t *testing.T) {
 	})
 
 	t.Run("repo should be idempotent", func(t *testing.T) {
-		repo := NewObserverRepository()
+		repo := NewAddressesRepository()
 
 		err := repo.ObserveAddress(ctx, addresses[1])
 		require.NoError(t, err)
@@ -72,7 +72,7 @@ func TestObserverRepository(t *testing.T) {
 	})
 
 	t.Run("no difference for uppercase and lowercase addresses", func(t *testing.T) {
-		repo := NewObserverRepository()
+		repo := NewAddressesRepository()
 
 		err := repo.ObserveAddress(ctx, addresses[1])
 		require.NoError(t, err)

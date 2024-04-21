@@ -50,14 +50,14 @@ func TestWithTransactionsRepo(t *testing.T) {
 	})
 }
 
-func TestWithObserverRepo(t *testing.T) {
-	t.Run("set observer repo opt", func(t *testing.T) {
-		repo := mock.ObserverRepository{}
+func TestWithAddressesRepo(t *testing.T) {
+	t.Run("set addresses repo opt", func(t *testing.T) {
+		repo := mock.AddressesRepository{}
 
-		p, err := NewParser(endpoint, nil, WithObserverRepo(repo))
+		p, err := NewParser(endpoint, nil, WithAddressesRepo(repo))
 		require.NoError(t, err)
-		require.NotNil(t, p.observerRepo)
-		require.Equal(t, repo, p.observerRepo)
+		require.NotNil(t, p.addressesRepository)
+		require.Equal(t, repo, p.addressesRepository)
 	})
 }
 

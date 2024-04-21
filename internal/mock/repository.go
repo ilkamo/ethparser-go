@@ -43,11 +43,11 @@ func (t TransactionsRepository) SaveLastProcessedBlock(_ context.Context, _ uint
 	return nil
 }
 
-type ObserverRepository struct {
+type AddressesRepository struct {
 	WantError error
 }
 
-func (o ObserverRepository) ObserveAddress(_ context.Context, _ string) error {
+func (o AddressesRepository) ObserveAddress(_ context.Context, _ string) error {
 	if o.WantError != nil {
 		return o.WantError
 	}
@@ -55,7 +55,7 @@ func (o ObserverRepository) ObserveAddress(_ context.Context, _ string) error {
 	return nil
 }
 
-func (o ObserverRepository) IsAddressObserved(_ context.Context, _ string) (bool, error) {
+func (o AddressesRepository) IsAddressObserved(_ context.Context, _ string) (bool, error) {
 	if o.WantError != nil {
 		return false, o.WantError
 	}

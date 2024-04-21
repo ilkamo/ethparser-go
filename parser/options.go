@@ -32,9 +32,9 @@ func WithTransactionsRepo(repo TransactionsRepository) Option {
 	}
 }
 
-func WithObserverRepo(repo ObserverRepository) Option {
+func WithAddressesRepo(repo AddressesRepository) Option {
 	return func(p *Parser) {
-		p.observerRepo = repo
+		p.addressesRepository = repo
 	}
 }
 

@@ -24,8 +24,8 @@ func TestParser_processBlock(t *testing.T) {
 		endpoint,
 		log,
 		WithNoNewBlocksPause(time.Millisecond),
-		WithObserverRepo(mock.ObserverRepository{
-			WantError: errors.New("observer error"),
+		WithAddressesRepo(mock.AddressesRepository{
+			WantError: errors.New("addresses error"),
 		}),
 		WithEthereumClient(ethMock),
 	)

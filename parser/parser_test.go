@@ -198,14 +198,14 @@ func TestParser(t *testing.T) {
 		wg.Wait()
 	})
 
-	t.Run("parser should log error because of observer repo", func(t *testing.T) {
+	t.Run("parser should log error because of addresses repo", func(t *testing.T) {
 		log := &mock.Logger{}
 
 		p, err := NewParser(
 			endpoint,
 			log,
 			WithNoNewBlocksPause(noNewBlockPauseDuration),
-			WithObserverRepo(mock.ObserverRepository{WantError: errors.New("observer error")}),
+			WithAddressesRepo(mock.AddressesRepository{WantError: errors.New("addresses error")}),
 			WithEthereumClient(ethClient),
 		)
 		require.NoError(t, err)

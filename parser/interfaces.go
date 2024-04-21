@@ -20,7 +20,7 @@ type TransactionsRepository interface {
 	SaveLastProcessedBlock(ctx context.Context, blockNumber uint64) error
 }
 
-type ObserverRepository interface {
+type AddressesRepository interface {
 	// ObserveAddress adds an address to the list of observed addresses.
 	ObserveAddress(ctx context.Context, address string) error
 
@@ -29,8 +29,8 @@ type ObserverRepository interface {
 }
 
 type EthereumClient interface {
-	// GetMostRecentBlock returns the most recent block number.
-	GetMostRecentBlock(ctx context.Context) (uint64, error)
+	// GetMostRecentBlockNumber returns the most recent block number.
+	GetMostRecentBlockNumber(ctx context.Context) (uint64, error)
 
 	// GetBlockByNumber returns a block by its number.
 	GetBlockByNumber(ctx context.Context, blockNumber uint64) (types.Block, error)

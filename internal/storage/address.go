@@ -6,22 +6,22 @@ import (
 	"sync"
 )
 
-// ObserverRepository is a repository for observing addresses.
+// AddressesRepository is a repository for addresses.
 // This is an in memory implementation however in production it should be backed by a
 // fast cache storage like Redis or similar.
-type ObserverRepository struct {
+type AddressesRepository struct {
 	observedAddresses map[string]struct{}
 	sync.RWMutex
 }
 
-// NewObserverRepository creates a new ObserverRepository.
-func NewObserverRepository() *ObserverRepository {
-	return &ObserverRepository{
+// NewAddressesRepository creates a new AddressesRepository.
+func NewAddressesRepository() *AddressesRepository {
+	return &AddressesRepository{
 		observedAddresses: make(map[string]struct{}),
 	}
 }
 
-func (o *ObserverRepository) ObserveAddress(_ context.Context, address string) error {
+func (o *AddressesRepository) ObserveAddress(_ context.Context, address string) error {
 	o.Lock()
 	defer o.Unlock()
 
@@ -30,7 +30,7 @@ func (o *ObserverRepository) ObserveAddress(_ context.Context, address string) e
 	return nil
 }
 
-func (o *ObserverRepository) IsAddressObserved(_ context.Context, address string) (bool, error) {
+func (o *AddressesRepository) IsAddressObserved(_ context.Context, address string) (bool, error) {
 	o.RLock()
 	defer o.RUnlock()
 

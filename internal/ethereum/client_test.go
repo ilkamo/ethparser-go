@@ -25,7 +25,7 @@ func TestNewClient(t *testing.T) {
 	})
 }
 
-func TestClient_GetMostRecentBlock(t *testing.T) {
+func TestClient_GetMostRecentBlockNumber(t *testing.T) {
 	ctx := context.TODO()
 
 	t.Run("should error because of bad response", func(t *testing.T) {
@@ -34,7 +34,7 @@ func TestClient_GetMostRecentBlock(t *testing.T) {
 		c, err := NewClient(endpoint, WithRPCClient(mockRPCClient))
 		require.NoError(t, err)
 
-		_, err = c.GetMostRecentBlock(ctx)
+		_, err = c.GetMostRecentBlockNumber(ctx)
 		require.ErrorContains(t, err, "could not unmarshal block number: unexpected end of JSON input")
 	})
 
@@ -44,7 +44,7 @@ func TestClient_GetMostRecentBlock(t *testing.T) {
 		c, err := NewClient(endpoint, WithRPCClient(mockRPCClient))
 		require.NoError(t, err)
 
-		blockNumber, err := c.GetMostRecentBlock(ctx)
+		blockNumber, err := c.GetMostRecentBlockNumber(ctx)
 		require.NoError(t, err)
 		require.Equal(t, uint64(1), blockNumber)
 	})
@@ -55,7 +55,7 @@ func TestClient_GetMostRecentBlock(t *testing.T) {
 		c, err := NewClient(endpoint, WithRPCClient(mockRPCClient))
 		require.NoError(t, err)
 
-		_, err = c.GetMostRecentBlock(ctx)
+		_, err = c.GetMostRecentBlockNumber(ctx)
 		require.ErrorContains(t, err, "could not call rpc method: test error")
 	})
 }
