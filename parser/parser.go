@@ -7,11 +7,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ilkamo/ethparser-go/internal/ethereum"
+	"github.com/ilkamo/ethparser-go/internal/storage"
 	"github.com/ilkamo/ethparser-go/types"
 )
 
 const (
 	defaultBlockProcessTimeout = 5 * time.Second
+	defaultNoNewBlocksPause    = 10 * time.Second // eth new block appears every ~12 seconds
 )
 
 type Parser struct {
@@ -28,20 +31,16 @@ type Parser struct {
 }
 
 func NewParser(
-	ethClient EthereumClient,
+	rpcEndpoint string,
 	logger types.Logger,
-	noNewBlocksPauseDuration time.Duration,
-	transactionsRepo TransactionsRepository,
-	observerRepo ObserverRepository,
 	opts ...Option,
-) *Parser {
+) (*Parser, error) {
 	p := &Parser{
 		blockProcessTimeout: defaultBlockProcessTimeout,
-		ethClient:           ethClient,
 		logger:              logger,
-		noNewBlocksPause:    noNewBlocksPauseDuration,
-		transactionsRepo:    transactionsRepo,
-		observerRepo:        observerRepo,
+		noNewBlocksPause:    defaultNoNewBlocksPause,
+		transactionsRepo:    storage.NewTransactionRepository(),
+		observerRepo:        storage.NewObserverRepository(),
 		workerChannel:       make(chan struct{}, 1),
 	}
 
@@ -49,9 +48,18 @@ func NewParser(
 		opt(p)
 	}
 
+	if p.ethClient == nil {
+		ethClient, err := ethereum.NewClient(rpcEndpoint)
+		if err != nil {
+			return nil, fmt.Errorf("could not create Ethereum client: %w", err)
+		}
+
+		p.ethClient = ethClient
+	}
+
 	p.workerChannel <- struct{}{}
 
-	return p
+	return p, nil
 }
 
 func (p *Parser) GetCurrentBlock() int {

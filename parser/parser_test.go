@@ -10,10 +10,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ilkamo/ethparser-go/storage"
-	"github.com/ilkamo/ethparser-go/tests/mock"
+	"github.com/ilkamo/ethparser-go/internal/mock"
+	"github.com/ilkamo/ethparser-go/internal/storage"
 	"github.com/ilkamo/ethparser-go/types"
 )
+
+const endpoint = "https://test:80"
 
 func TestParser(t *testing.T) {
 	mostRecentBlockOnChain := uint64(19698125)
@@ -43,18 +45,16 @@ func TestParser(t *testing.T) {
 
 	t.Run("parser should start and process until the latest block", func(t *testing.T) {
 		lastParsedBlock := uint64(19698124)
-
-		transactionsRepository := storage.NewTransactionRepositoryWithLatestBlock(lastParsedBlock)
-		observerRepository := storage.NewObserverRepository()
 		log := &mock.Logger{}
 
-		p := NewParser(
-			ethClient,
+		p, err := NewParser(
+			endpoint,
 			log,
-			noNewBlockPauseDuration,
-			transactionsRepository,
-			observerRepository,
+			WithNoNewBlocksPause(noNewBlockPauseDuration),
+			WithTransactionsRepo(storage.NewTransactionRepositoryWithLatestBlock(lastParsedBlock)),
+			WithEthereumClient(ethClient),
 		)
+		require.NoError(t, err)
 		require.NotNil(t, p)
 		require.Equal(t, 0, p.GetCurrentBlock())
 		require.Empty(t, p.GetTransactions(address0))
@@ -93,13 +93,14 @@ func TestParser(t *testing.T) {
 	t.Run("parser should error because of transactions repo", func(t *testing.T) {
 		log := &mock.Logger{}
 
-		p := NewParser(
-			ethClient,
+		p, err := NewParser(
+			endpoint,
 			log,
-			noNewBlockPauseDuration,
-			mock.TransactionsRepository{GetError: errors.New("transactions error")},
-			storage.NewObserverRepository(),
+			WithNoNewBlocksPause(noNewBlockPauseDuration),
+			WithTransactionsRepo(mock.TransactionsRepository{GetError: errors.New("transactions error")}),
+			WithEthereumClient(ethClient),
 		)
+		require.NoError(t, err)
 		require.NotNil(t, p)
 
 		require.Empty(t, p.GetTransactions(address0))
@@ -110,16 +111,17 @@ func TestParser(t *testing.T) {
 	t.Run("parser should error because of context timeout", func(t *testing.T) {
 		log := &mock.Logger{}
 
-		p := NewParser(
-			ethClient,
+		p, err := NewParser(
+			endpoint,
 			log,
-			noNewBlockPauseDuration,
-			mock.TransactionsRepository{GetError: context.DeadlineExceeded},
-			storage.NewObserverRepository(),
+			WithNoNewBlocksPause(noNewBlockPauseDuration),
+			WithTransactionsRepo(mock.TransactionsRepository{GetError: context.DeadlineExceeded}),
+			WithEthereumClient(ethClient),
 		)
+		require.NoError(t, err)
 		require.NotNil(t, p)
 
-		err := p.Run(context.TODO())
+		err = p.Run(context.TODO())
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 
@@ -131,13 +133,13 @@ func TestParser(t *testing.T) {
 			WithError:       context.DeadlineExceeded,
 		}
 
-		p := NewParser(
-			ethMock,
+		p, err := NewParser(
+			endpoint,
 			log,
-			noNewBlockPauseDuration,
-			mock.TransactionsRepository{},
-			storage.NewObserverRepository(),
+			WithNoNewBlocksPause(noNewBlockPauseDuration),
+			WithEthereumClient(ethMock),
 		)
+		require.NoError(t, err)
 		require.NotNil(t, p)
 
 		ctx, cancel := context.WithCancel(context.TODO())
@@ -166,13 +168,14 @@ func TestParser(t *testing.T) {
 			BlockByNumber:   types.Block{},
 		}
 
-		p := NewParser(
-			ethMock,
+		p, err := NewParser(
+			endpoint,
 			log,
-			noNewBlockPauseDuration,
-			mock.TransactionsRepository{SaveError: errors.New("save error")},
-			storage.NewObserverRepository(),
+			WithNoNewBlocksPause(noNewBlockPauseDuration),
+			WithTransactionsRepo(mock.TransactionsRepository{SaveError: errors.New("save error")}),
+			WithEthereumClient(ethMock),
 		)
+		require.NoError(t, err)
 		require.NotNil(t, p)
 
 		ctx, cancel := context.WithCancel(context.TODO())
@@ -197,13 +200,14 @@ func TestParser(t *testing.T) {
 	t.Run("parser should log error because of observer repo", func(t *testing.T) {
 		log := &mock.Logger{}
 
-		p := NewParser(
-			ethClient,
+		p, err := NewParser(
+			endpoint,
 			log,
-			noNewBlockPauseDuration,
-			mock.TransactionsRepository{},
-			mock.ObserverRepository{WantError: errors.New("observer error")},
+			WithNoNewBlocksPause(noNewBlockPauseDuration),
+			WithObserverRepo(mock.ObserverRepository{WantError: errors.New("observer error")}),
+			WithEthereumClient(ethClient),
 		)
+		require.NoError(t, err)
 		require.NotNil(t, p)
 
 		require.Empty(t, p.Subscribe(address0))
@@ -218,13 +222,13 @@ func TestParser(t *testing.T) {
 			BlockByNumber:   types.Block{},
 		}
 
-		p := NewParser(
-			ethMock,
+		p, err := NewParser(
+			endpoint,
 			log,
-			noNewBlockPauseDuration,
-			mock.TransactionsRepository{},
-			mock.ObserverRepository{},
+			WithNoNewBlocksPause(noNewBlockPauseDuration),
+			WithEthereumClient(ethMock),
 		)
+		require.NoError(t, err)
 		require.NotNil(t, p)
 
 		ctx, cancel := context.WithCancel(context.TODO())
@@ -241,7 +245,7 @@ func TestParser(t *testing.T) {
 			return p.isRunning()
 		}, time.Second*2, time.Millisecond*100)
 
-		err := p.Run(context.TODO())
+		err = p.Run(context.TODO())
 		require.ErrorAs(t, err, &types.ErrAlreadyRunning)
 
 		cancel()

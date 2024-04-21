@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ilkamo/ethparser-go/tests/mock"
+	"github.com/ilkamo/ethparser-go/internal/mock"
 	"github.com/ilkamo/ethparser-go/types"
 )
 
@@ -19,15 +19,16 @@ func TestParser_processBlock(t *testing.T) {
 		BlockByNumber:   types.Block{},
 	}
 
-	p := NewParser(
-		ethMock,
+	p, err := NewParser(
+		endpoint,
 		log,
-		time.Millisecond,
-		mock.TransactionsRepository{},
-		mock.ObserverRepository{
+		WithNoNewBlocksPause(time.Millisecond),
+		WithObserverRepo(mock.ObserverRepository{
 			WantError: errors.New("observer error"),
-		},
+		}),
+		WithEthereumClient(ethMock),
 	)
+	require.NoError(t, err)
 	require.NotNil(t, p)
 
 	tx := types.Transaction{
@@ -37,6 +38,6 @@ func TestParser_processBlock(t *testing.T) {
 		Value: "0x0123",
 	}
 
-	err := p.processBlock(context.Background(), types.Block{Transactions: []types.Transaction{tx}})
+	err = p.processBlock(context.Background(), types.Block{Transactions: []types.Transaction{tx}})
 	require.Error(t, err)
 }
