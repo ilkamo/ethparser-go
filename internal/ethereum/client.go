@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ilkamo/ethparser-go/hexutils"
-	"github.com/ilkamo/ethparser-go/jsonrpc"
+	"github.com/ilkamo/ethparser-go/internal/jsonrpc"
 	"github.com/ilkamo/ethparser-go/types"
 )
 
@@ -51,7 +50,7 @@ func (c Client) GetMostRecentBlock(ctx context.Context) (uint64, error) {
 		return 0, fmt.Errorf("could not unmarshal block number: %w", err)
 	}
 
-	return hexutils.DecodeEthNumberToUint(blockNumber)
+	return DecodeEthNumberToUint(blockNumber)
 }
 
 // GetBlockByNumber returns a block by its number.
@@ -59,7 +58,7 @@ func (c Client) GetBlockByNumber(ctx context.Context, blockNumber uint64) (types
 	resp, err := c.rpcClient.Call(
 		ctx,
 		"eth_getBlockByNumber",
-		[]interface{}{hexutils.EncodeToEthNumber(blockNumber), true},
+		[]interface{}{EncodeToEthNumber(blockNumber), true},
 	)
 	if err != nil {
 		return types.Block{}, fmt.Errorf("could not call rpc method: %w", err)

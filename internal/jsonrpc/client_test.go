@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/ilkamo/ethparser-go/tests/mock"
-
 	"github.com/stretchr/testify/require"
+
+	"github.com/ilkamo/ethparser-go/internal/mock"
 )
 
 func TestNewClient(t *testing.T) {

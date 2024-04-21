@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/ilkamo/ethparser-go/ethereum"
+	"github.com/ilkamo/ethparser-go/internal/ethereum"
+	"github.com/ilkamo/ethparser-go/internal/storage"
 	"github.com/ilkamo/ethparser-go/parser"
-	"github.com/ilkamo/ethparser-go/storage"
 )
 
 type ParserTestSuite struct {

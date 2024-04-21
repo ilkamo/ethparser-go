@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ilkamo/ethparser-go/tests/mock"
-	"github.com/ilkamo/ethparser-go/tests/testdata"
+	"github.com/ilkamo/ethparser-go/internal/mock"
+	"github.com/ilkamo/ethparser-go/internal/testdata"
 )
 
 const endpoint = "http://localhost:1212"
