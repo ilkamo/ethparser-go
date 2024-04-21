@@ -3,6 +3,7 @@ package parser
 import (
 	"context"
 	"errors"
+	"math/big"
 	"strings"
 	"sync"
 	"testing"
@@ -26,7 +27,7 @@ func TestParser(t *testing.T) {
 		Hash:  "0x005295d8C90Fe127932C6fE78daE6D5a4B975098",
 		From:  address0,
 		To:    "0x225295d8C90Fe127932C6fE78daE6D5a4B975098",
-		Value: "0x0123",
+		Value: *big.NewInt(123),
 	}
 	expectedBlock := types.Block{
 		Number:     mostRecentBlockOnChain,

@@ -24,39 +24,35 @@ func HasEthNumberPrefix(s string) bool {
 	return true
 }
 
-func DecodeEthNumberToUint(s string) (uint64, error) {
+func BigIntFromEthNumber(s string) (big.Int, error) {
+	if !HasEthNumberPrefix(s) {
+		return big.Int{}, ErrInvalidHexNumber
+	}
+
+	var i big.Int
+	if _, ok := i.SetString(s, 0); !ok {
+		return big.Int{}, errors.New("could not decode hex number to string")
+	}
+
+	return i, nil
+}
+
+func Uint64FromEthNumber(s string) (uint64, error) {
 	// When decoding quantities (integers, numbers): decode hex, skip prefix "0x".
 
 	if !HasEthNumberPrefix(s) {
 		return 0, ErrInvalidHexNumber
 	}
 
-	// Remove the "0x" prefix
-	withoutPrefix := s[2:]
-
-	// Convert the string from hexadecimal to int64.
-	numb, err := strconv.ParseUint(withoutPrefix, 16, 64)
+	n, err := BigIntFromEthNumber(s)
 	if err != nil {
 		return 0, err
 	}
 
-	return numb, nil
+	return n.Uint64(), nil
 }
 
-func DecodeEthNumberToStr(s string) (string, error) {
-	if !HasEthNumberPrefix(s) {
-		return "", ErrInvalidHexNumber
-	}
-
-	var i big.Int
-	if _, ok := i.SetString(s, 0); !ok {
-		return "", errors.New("could not decode hex number to string")
-	}
-
-	return i.String(), nil
-}
-
-func EncodeToEthNumber(n uint64) string {
+func EthNumberFromUnit64(n uint64) string {
 	if n == 0 {
 		return "0x0"
 	}

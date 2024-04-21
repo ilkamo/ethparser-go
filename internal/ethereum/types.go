@@ -17,7 +17,7 @@ type block struct {
 }
 
 func (b block) ToBlock() (types.Block, error) {
-	parsedNumber, err := DecodeEthNumberToUint(b.Number)
+	parsedNumber, err := Uint64FromEthNumber(b.Number)
 	if err != nil {
 		return types.Block{}, fmt.Errorf("could not decode block number: %w", err)
 	}
@@ -25,7 +25,7 @@ func (b block) ToBlock() (types.Block, error) {
 	// The timestamp field in an Ethereum block is a 256-bit value representing the Unix timestamp
 	// of when the block was mined. The Unix timestamp represents time as the number of
 	// seconds elapsed since January 1, 1970, at 00:00:00 UTC
-	elapsedSeconds, err := DecodeEthNumberToUint(b.Timestamp)
+	elapsedSeconds, err := Uint64FromEthNumber(b.Timestamp)
 	if err != nil {
 		return types.Block{}, fmt.Errorf("could not decode block timestamp: %w", err)
 	}
@@ -77,12 +77,12 @@ type transaction struct {
 }
 
 func (t transaction) ToTransaction() (types.Transaction, error) {
-	parsedNumber, err := DecodeEthNumberToUint(t.BlockNumber)
+	parsedNumber, err := Uint64FromEthNumber(t.BlockNumber)
 	if err != nil {
 		return types.Transaction{}, fmt.Errorf("could not decode tx block number: %w", err)
 	}
 
-	parsedValue, err := DecodeEthNumberToStr(t.Value)
+	parsedValue, err := BigIntFromEthNumber(t.Value)
 	if err != nil {
 		return types.Transaction{}, fmt.Errorf("could not decode tx value: %w", err)
 	}

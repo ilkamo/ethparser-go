@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"math/big"
+	"time"
+)
 
 type Block struct {
 	Number       uint64
@@ -16,6 +19,6 @@ type Transaction struct {
 	Hash        string
 	From        string
 	To          string
-	Value       string // ideally a decimal.Decimal but I cannot use external libraries for this exercise.
+	Value       big.Int // ideally a decimal.Decimal but I cannot use external libraries for this exercise.
 	// ... other fields omitted for the scope of this exercise
 }

@@ -2,7 +2,10 @@ package ethereum
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestHasEthNumberPrefix(t *testing.T) {
@@ -54,7 +57,7 @@ func TestHasEthNumberPrefix(t *testing.T) {
 	}
 }
 
-func TestDecodeEthNumber(t *testing.T) {
+func TestUint64FromEthNumber(t *testing.T) {
 	testCases := []struct {
 		number   string
 		expected uint64
@@ -91,7 +94,7 @@ func TestDecodeEthNumber(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("decode %s", tc.number), func(t *testing.T) {
-			got, err := DecodeEthNumberToUint(tc.number)
+			got, err := Uint64FromEthNumber(tc.number)
 			if err != nil && !tc.wantErr {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -102,7 +105,7 @@ func TestDecodeEthNumber(t *testing.T) {
 	}
 }
 
-func TestEncodeToEthNumber(t *testing.T) {
+func TestEthNumberFromUnit64(t *testing.T) {
 	testCases := []struct {
 		number   uint64
 		expected string
@@ -127,7 +130,7 @@ func TestEncodeToEthNumber(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("encode %d", tc.number), func(t *testing.T) {
-			got := EncodeToEthNumber(tc.number)
+			got := EthNumberFromUnit64(tc.number)
 			if got != tc.expected {
 				t.Errorf("expected %s, got %s", tc.expected, got)
 			}
@@ -135,25 +138,25 @@ func TestEncodeToEthNumber(t *testing.T) {
 	}
 }
 
-func TestDecodeEthNumberToStr(t *testing.T) {
+func TestBigIntFromEthNumber(t *testing.T) {
 	testCases := []struct {
 		number   string
-		expected string
+		expected *big.Int
 		wantErr  bool
 	}{
 		{
 			number:   "0x0",
-			expected: "0",
+			expected: big.NewInt(0),
 			wantErr:  false,
 		},
 		{
 			number:   "0x123",
-			expected: "291",
+			expected: big.NewInt(291),
 			wantErr:  false,
 		},
 		{
 			number:   "0x98a7d9b8314c0000",
-			expected: "11000000000000000000",
+			expected: mustBigIntFromString("11000000000000000000"),
 			wantErr:  false,
 		},
 		{
@@ -170,20 +173,29 @@ func TestDecodeEthNumberToStr(t *testing.T) {
 		},
 		{
 			number:   "0x197D4DF19D605767337E9F14D3EEC8920E400000000000000",
-			expected: "10000000000000000000000000000000000000000000000000000000000",
+			expected: mustBigIntFromString("10000000000000000000000000000000000000000000000000000000000"),
 			wantErr:  false,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("decode %s", tc.number), func(t *testing.T) {
-			got, err := DecodeEthNumberToStr(tc.number)
-			if err != nil && !tc.wantErr {
-				t.Errorf("unexpected error: %v", err)
-			}
-			if got != tc.expected {
-				t.Errorf("expected %s, got %s", tc.expected, got)
+			got, err := BigIntFromEthNumber(tc.number)
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expected.String(), got.String())
 			}
 		})
 	}
+}
+
+func mustBigIntFromString(s string) *big.Int {
+	i, ok := new(big.Int).SetString(s, 10)
+	if !ok {
+		panic("could not decode hex number to string")
+	}
+
+	return i
 }

@@ -50,7 +50,7 @@ func (c Client) GetMostRecentBlock(ctx context.Context) (uint64, error) {
 		return 0, fmt.Errorf("could not unmarshal block number: %w", err)
 	}
 
-	return DecodeEthNumberToUint(blockNumber)
+	return Uint64FromEthNumber(blockNumber)
 }
 
 // GetBlockByNumber returns a block by its number.
@@ -58,7 +58,7 @@ func (c Client) GetBlockByNumber(ctx context.Context, blockNumber uint64) (types
 	resp, err := c.rpcClient.Call(
 		ctx,
 		"eth_getBlockByNumber",
-		[]interface{}{EncodeToEthNumber(blockNumber), true},
+		[]interface{}{EthNumberFromUnit64(blockNumber), true},
 	)
 	if err != nil {
 		return types.Block{}, fmt.Errorf("could not call rpc method: %w", err)

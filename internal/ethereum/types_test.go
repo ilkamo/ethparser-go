@@ -2,6 +2,7 @@ package ethereum
 
 import (
 	"encoding/json"
+	"math/big"
 	"testing"
 	"time"
 
@@ -23,7 +24,7 @@ var expectedBlock = types.Block{
 			Hash:        "0xfa5109806d00fdfe9d0b73f9e9c2c59efd61a197900dcb03faff88c5fe263207",
 			From:        "0x2e220f48eab381507f627a3e96f5387885619e83",
 			To:          "0xb584d4be1a5470ca1a8778e9b86c81e165204599",
-			Value:       "1300000000000",
+			Value:       *big.NewInt(1300000000000),
 		},
 		{
 			BlockHash:   "0xed6fe3d8722be4b4614bc4fd2cc452d1d03ccdf453bc664b756a626d32ee91af",
@@ -31,7 +32,7 @@ var expectedBlock = types.Block{
 			Hash:        "0xe7d8be4e841d3ccda0f790ec0c57e483b1795c2a2f4f3b0a6b37dfa1f1ee8fd2",
 			From:        "0x264bd8291fae1d75db2c5f573b07faa6715997b5",
 			To:          "0xa6e127536a7b9aca15c928f6332fc9d2cd2e93c8",
-			Value:       "636084590000000000",
+			Value:       *big.NewInt(636084590000000000),
 		},
 	},
 }
