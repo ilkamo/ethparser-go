@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/ilkamo/ethparser-go/ethereum"
+	"github.com/ilkamo/ethparser-go/internal/ethereum"
+	"github.com/ilkamo/ethparser-go/internal/storage"
 	"github.com/ilkamo/ethparser-go/parser"
-	"github.com/ilkamo/ethparser-go/storage"
 )
 
 type ParserTestSuite struct {
@@ -29,11 +29,16 @@ func (s *ParserTestSuite) SetupSuite() {
 	s.transactionsRepository = storage.NewTransactionRepositoryWithLatestBlock(lastParsedBlock)
 	s.observerRepository = storage.NewObserverRepository()
 
-	s.parser = parser.NewParser(
-		client,
+	p, err := parser.NewParser(
+		"https://cloudflare-eth.com",
 		slog.New(slog.NewJSONHandler(os.Stdout, nil)),
-		noNewBlockPause,
-		s.transactionsRepository,
-		s.observerRepository,
+		parser.WithNoNewBlocksPause(noNewBlockPause),
+		parser.WithTransactionsRepo(s.transactionsRepository),
+		parser.WithEthereumClient(client),
+		parser.WithObserverRepo(s.observerRepository),
 	)
+	s.Require().NoError(err)
+	s.Require().NotNil(p)
+
+	s.parser = p
 }

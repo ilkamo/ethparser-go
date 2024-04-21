@@ -1,4 +1,4 @@
-package hexutils
+package ethereum
 
 import (
 	"errors"

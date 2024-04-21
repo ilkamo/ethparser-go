@@ -19,3 +19,27 @@ func WithLogger(logger types.Logger) Option {
 		p.logger = logger
 	}
 }
+
+func WithEthereumClient(client EthereumClient) Option {
+	return func(p *Parser) {
+		p.ethClient = client
+	}
+}
+
+func WithTransactionsRepo(repo TransactionsRepository) Option {
+	return func(p *Parser) {
+		p.transactionsRepo = repo
+	}
+}
+
+func WithObserverRepo(repo ObserverRepository) Option {
+	return func(p *Parser) {
+		p.observerRepo = repo
+	}
+}
+
+func WithNoNewBlocksPause(duration time.Duration) Option {
+	return func(p *Parser) {
+		p.noNewBlocksPause = duration
+	}
+}

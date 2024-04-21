@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ilkamo/ethparser-go/tests/testdata"
+	"github.com/ilkamo/ethparser-go/internal/testdata"
 	"github.com/ilkamo/ethparser-go/types"
 )
 

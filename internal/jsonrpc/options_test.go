@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ilkamo/ethparser-go/tests/mock"
+	"github.com/ilkamo/ethparser-go/internal/mock"
 )
 
 const endpoint = "http://localhost:8545"
